@@ -17,7 +17,7 @@ func TestTruncate(t *testing.T) {
 		cases    []tcase
 	}{
 		{
-			Cut{},
+			CutStrategy{},
 			[]tcase{
 				{"works with shorter strings",
 					"те", 10, "те"},
@@ -30,7 +30,7 @@ func TestTruncate(t *testing.T) {
 			},
 		},
 		{
-			CutEllipsis{},
+			CutEllipsisStrategy{},
 			[]tcase{
 				{"works with shorter strings",
 					"те", 10, "те"},
