@@ -30,12 +30,7 @@ func Truncator(str string, length int, strategy Strategy) string {
 type CutStrategy struct{}
 
 func (CutStrategy) Truncate(str string, length int) string {
-
-	r := []rune(str)
-	if length >= len(r) {
-		return str
-	}
-	return string(r[0:length])
+	return Truncate(str, length, "", PositionEnd)
 }
 
 // CutEllipsisStrategy simply truncates the string to the desired length and adds ellipsis at the end
@@ -56,27 +51,10 @@ func (s CutEllipsisLeadingStrategy) Truncate(str string, length int) string {
 type EllipsisMiddleStrategy struct{}
 
 func (e EllipsisMiddleStrategy) Truncate(str string, length int) string {
-	r := []rune(str)
-	sLen := len(r)
-	if length >= sLen {
-		return str
-	}
-	if length < 3 {
-		return CutStrategy{}.Truncate(str, length)
-	}
-	var delta int
-	if sLen%2 == 0 {
-		delta = int(math.Ceil(float64(sLen-length) / 2))
-	} else {
-		delta = int(math.Floor(float64(sLen-length) / 2))
-	}
-	result := make([]rune, length)
-	copy(result, r[0:delta])
-	result[delta] = '…'
-	copy(result[delta+1:], r[length-delta+1:])
-	return string(result)
+	return Truncate(str, length, DEFAULT_OMISSION, PositionMiddle)
 }
 
+// Trauncate truncates string accoriding the parameters
 func Truncate(str string, length int, omission string, pos TruncatePosition) string {
 	r := []rune(str)
 	sLen := len(r)
@@ -96,9 +74,27 @@ func Truncate(str string, length int, omission string, pos TruncatePosition) str
 func truncateStart(r []rune, length int, omission string) string {
 	return string(omission + string(r[:length-utf8.RuneCountInString(omission)]))
 }
-func truncateMiddle(r []rune, length int, omission string) string {
-	return string(omission + string(r[:length-len(omission)]))
-}
+
 func truncateEnd(r []rune, length int, omission string) string {
 	return string(string(r[:length-utf8.RuneCountInString(omission)]) + omission)
+}
+
+func truncateMiddle(r []rune, length int, omission string) string {
+	sLen := len(r)
+	oLen := utf8.RuneCountInString(omission)
+	if length < oLen+2 {
+		return truncateEnd(r, length, "")
+	}
+	var delta int
+	if sLen%2 == 0 {
+		delta = int(math.Ceil(float64(sLen-length) / 2))
+	} else {
+		delta = int(math.Floor(float64(sLen-length) / 2))
+	}
+	result := make([]rune, length)
+	copy(result, r[0:delta])
+	copy(result, r[0:delta])
+	copy(result[delta:], []rune(omission))
+	copy(result[delta+oLen:], r[length-delta+oLen:])
+	return string(result)
 }
