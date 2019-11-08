@@ -1,12 +1,3 @@
-# truncate
-[![Build Status](https://travis-ci.org/aquilax/truncate.svg?branch=master)](https://travis-ci.org/aquilax/truncate) [![GoDoc](https://godoc.org/github.com/aquilax/truncate?status.svg)](https://godoc.org/github.com/aquilax/truncate)
-
-Go library for truncating strings
-
-
-Sample usage:
-
-```go
 package truncate_test
 
 import (
@@ -43,4 +34,3 @@ func ExampleTruncator() {
 	fmt.Printf("%s : %d characters", truncated, utf8.RuneCountInString(truncated))
 	// Output: This is a : 9 characters
 }
-```

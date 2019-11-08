@@ -2,6 +2,7 @@ package truncate
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -50,9 +51,9 @@ func TestTruncator(t *testing.T) {
 				{"works with exact size strings",
 					"тест", 4, "тест"},
 				{"works with ansi strings",
-					"test", 3, "…te"},
+					"test", 3, "…st"},
 				{"works with utf8 strings",
-					"тест", 3, "…те"},
+					"тест", 3, "…ст"},
 			},
 		},
 		{
@@ -67,9 +68,9 @@ func TestTruncator(t *testing.T) {
 				{"works with utf8 strings",
 					"тест", 3, "т…т"},
 				{"works with loner strings off cut",
-					"testttest", 5, "te…tt"},
+					"testttest", 5, "te…st"},
 				{"works with loner strings even cut",
-					"testttest", 4, "te…t"},
+					"testttest", 4, "t…st"},
 			},
 		},
 	}
@@ -81,5 +82,30 @@ func TestTruncator(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func BenchmarkTruncate(b *testing.B) {
+	benchmarks := []struct {
+		name     string
+		position TruncatePosition
+	}{
+		{"PositionEnd", PositionEnd},
+		{"PositionStart", PositionStart},
+		{"PositionMiddle", PositionMiddle},
+	}
+	var cases = make([]string, 100)
+	for i := 0; i < 100; i++ {
+		cases[i] = strings.Repeat("Ю", i)
+	}
+
+	for _, bench := range benchmarks {
+		b.Run(bench.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				for i := range cases {
+					Truncate(cases[i], i+1/2, "Я", bench.position)
+				}
+			}
+		})
 	}
 }
