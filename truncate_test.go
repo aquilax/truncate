@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestTruncate(t *testing.T) {
+func TestTruncator(t *testing.T) {
 	type tcase struct {
 		name   string
 		str    string
@@ -43,6 +43,19 @@ func TestTruncate(t *testing.T) {
 			},
 		},
 		{
+			CutEllipsisLeadingStrategy{},
+			[]tcase{
+				{"works with shorter strings",
+					"те", 10, "те"},
+				{"works with exact size strings",
+					"тест", 4, "тест"},
+				{"works with ansi strings",
+					"test", 3, "…te"},
+				{"works with utf8 strings",
+					"тест", 3, "…те"},
+			},
+		},
+		{
 			EllipsisMiddleStrategy{},
 			[]tcase{
 				{"works with shorter strings",
@@ -63,7 +76,7 @@ func TestTruncate(t *testing.T) {
 	for _, tt := range tests {
 		for _, cc := range tt.cases {
 			t.Run(fmt.Sprintf("%T - %s", tt.strategy, cc.name), func(t *testing.T) {
-				if got := Truncate(cc.str, cc.length, tt.strategy); got != cc.want {
+				if got := Truncator(cc.str, cc.length, tt.strategy); got != cc.want {
 					t.Errorf("Truncate(`%v`) = `%v`, want `%v`", cc.str, got, cc.want)
 				}
 			})
