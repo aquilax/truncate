@@ -42,12 +42,29 @@ func TestTruncate(t *testing.T) {
 					"тест", 3, "те…"},
 			},
 		},
+		{
+			EllipsisMiddleStrategy{},
+			[]tcase{
+				{"works with shorter strings",
+					"те", 10, "те"},
+				{"works with exact size strings",
+					"тест", 4, "тест"},
+				{"works with ansi strings",
+					"test", 3, "t…t"},
+				{"works with utf8 strings",
+					"тест", 3, "т…т"},
+				{"works with loner strings off cut",
+					"testttest", 5, "te…tt"},
+				{"works with loner strings even cut",
+					"testttest", 4, "te…t"},
+			},
+		},
 	}
 	for _, tt := range tests {
 		for _, cc := range tt.cases {
 			t.Run(fmt.Sprintf("%T - %s", tt.strategy, cc.name), func(t *testing.T) {
 				if got := Truncate(cc.str, cc.length, tt.strategy); got != cc.want {
-					t.Errorf("Truncate() = `%v`, want `%v`", got, cc.want)
+					t.Errorf("Truncate(`%v`) = `%v`, want `%v`", cc.str, got, cc.want)
 				}
 			})
 		}
