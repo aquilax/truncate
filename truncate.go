@@ -54,7 +54,7 @@ func (e EllipsisMiddleStrategy) Truncate(str string, length int) string {
 	return Truncate(str, length, DEFAULT_OMISSION, PositionMiddle)
 }
 
-// Trauncate truncates string accoriding the parameters
+// Truncate truncates string according the parameters
 func Truncate(str string, length int, omission string, pos TruncatePosition) string {
 	r := []rune(str)
 	sLen := len(r)
@@ -72,7 +72,7 @@ func Truncate(str string, length int, omission string, pos TruncatePosition) str
 }
 
 func truncateStart(r []rune, length int, omission string) string {
-	return string(omission + string(r[:length-utf8.RuneCountInString(omission)]))
+	return string(omission + string(r[len(r)-length+utf8.RuneCountInString(omission):]))
 }
 
 func truncateEnd(r []rune, length int, omission string) string {
@@ -82,19 +82,19 @@ func truncateEnd(r []rune, length int, omission string) string {
 func truncateMiddle(r []rune, length int, omission string) string {
 	sLen := len(r)
 	oLen := utf8.RuneCountInString(omission)
+	// Make sure we have one character before and after
 	if length < oLen+2 {
 		return truncateEnd(r, length, "")
 	}
 	var delta int
 	if sLen%2 == 0 {
-		delta = int(math.Ceil(float64(sLen-length) / 2))
+		delta = int(math.Ceil(float64(length-oLen) / 2))
 	} else {
-		delta = int(math.Floor(float64(sLen-length) / 2))
+		delta = int(math.Floor(float64(length-oLen) / 2))
 	}
 	result := make([]rune, length)
 	copy(result, r[0:delta])
-	copy(result, r[0:delta])
 	copy(result[delta:], []rune(omission))
-	copy(result[delta+oLen:], r[length-delta+oLen:])
+	copy(result[delta+oLen:], r[sLen-length+oLen+delta:])
 	return string(result)
 }
