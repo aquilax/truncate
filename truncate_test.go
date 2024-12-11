@@ -85,6 +85,57 @@ func TestTruncator(t *testing.T) {
 	}
 }
 
+func TestTruncate(t *testing.T) {
+	type args struct {
+		str      string
+		length   int
+		omission string
+		pos      TruncatePosition
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"omission shorter than length",
+			args{"test string", 2, "...", PositionEnd},
+			"te",
+		},
+		{
+			"negative length",
+			args{"test string", -2, "...", PositionEnd},
+			"",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("Truncate should not panic with `%v`", r)
+				}
+			}()
+
+			if got := Truncate(tt.args.str, tt.args.length, tt.args.omission, tt.args.pos); got != tt.want {
+				t.Errorf("Truncate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func FuzzTruncate(f *testing.F) {
+	f.Add("test", 4, "…", uint8(0))
+	f.Fuzz(func(t *testing.T, str string, length int, omission string, posRaw uint8) {
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Truncate should not panic with `%v`", r)
+			}
+		}()
+		pos := posRaw % 3
+		Truncate(str, length, omission, TruncatePosition(pos))
+	})
+}
+
 func BenchmarkTruncate(b *testing.B) {
 	benchmarks := []struct {
 		name     string
