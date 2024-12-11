@@ -56,35 +56,41 @@ func (e EllipsisMiddleStrategy) Truncate(str string, length int) string {
 
 // Truncate truncates string according the parameters
 func Truncate(str string, length int, omission string, pos TruncatePosition) string {
+	if length < 1 {
+		return ""
+	}
 	r := []rune(str)
 	sLen := len(r)
+	oLen := utf8.RuneCountInString(omission)
 	if length >= sLen {
 		return str
 	}
+	if length <= oLen {
+		return truncateEnd(r, length, "", 0)
+	}
 	switch pos {
 	case PositionStart:
-		return truncateStart(r, length, omission)
+		return truncateStart(r, length, omission, oLen)
 	case PositionMiddle:
-		return truncateMiddle(r, length, omission)
+		return truncateMiddle(r, length, omission, oLen)
 	default:
-		return truncateEnd(r, length, omission)
+		return truncateEnd(r, length, omission, oLen)
 	}
 }
 
-func truncateStart(r []rune, length int, omission string) string {
-	return string(omission + string(r[len(r)-length+utf8.RuneCountInString(omission):]))
+func truncateStart(r []rune, length int, omission string, oLen int) string {
+	return string(omission + string(r[len(r)-length+oLen:]))
 }
 
-func truncateEnd(r []rune, length int, omission string) string {
-	return string(string(r[:length-utf8.RuneCountInString(omission)]) + omission)
+func truncateEnd(r []rune, length int, omission string, oLen int) string {
+	return string(string(r[:length-oLen]) + omission)
 }
 
-func truncateMiddle(r []rune, length int, omission string) string {
+func truncateMiddle(r []rune, length int, omission string, oLen int) string {
 	sLen := len(r)
-	oLen := utf8.RuneCountInString(omission)
 	// Make sure we have one character before and after
 	if length < oLen+2 {
-		return truncateEnd(r, length, "")
+		return truncateEnd(r, length, "", oLen)
 	}
 	var delta int
 	if sLen%2 == 0 {
